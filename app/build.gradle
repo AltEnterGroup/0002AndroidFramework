@@ -1,0 +1,64 @@
+apply plugin: 'com.android.application'
+
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'cloudwalk'
+            keyPassword 'yu198651'
+            storeFile file('./cloudwalk.keystore')
+            storePassword 'yu198651'
+        }
+    }
+
+    compileSdkVersion Integer.parseInt(ANDROID_BUILD_COMPILE_SDK_VERSION)
+    buildToolsVersion ANDROID_BUILD_TOOLS_VERSION
+    defaultConfig {
+        minSdkVersion Integer.parseInt(MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(ANDROID_BUILD_TARGET_SDK_VERSION)
+        versionCode Integer.parseInt(VERSION_CODE)
+        versionName VERSION_NAME
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.config
+            minifyEnabled false
+        }
+        release {
+            signingConfig signingConfigs.config
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildToolsVersion '25.0.0'
+
+
+    productFlavors{
+        cw{}
+    }
+    productFlavors.all{
+        flavor-> flavor.manifestPlaceholders = [ UMENG_CHANNEL_VALUE:name ]
+    }
+    //指定apk名称
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFile = new File(
+                    output.outputFile.parent,
+                   // "apkname-${variant.buildType.name}-${variant.versionName}-${variant.productFlavors[0].name}.apk".toLowerCase())
+                    "apkname-${variant.buildType.name}-${variant.versionName}-${releaseTime()}.apk".toLowerCase())
+        }
+    }
+}
+// 获取当前系统时间
+def releaseTime() {    return new Date().format("yyMMdd", TimeZone.getTimeZone("UTC"))
+}//
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(path: ':common')
+}
+repositories {
+
+    flatDir {
+        dirs project(':libs').file('libs') //this way we can find the .aar file in libs folder
+    }
+}
